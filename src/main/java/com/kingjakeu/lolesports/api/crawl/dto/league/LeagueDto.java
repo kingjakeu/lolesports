@@ -3,9 +3,11 @@ package com.kingjakeu.lolesports.api.crawl.dto.league;
 import com.kingjakeu.lolesports.api.league.domain.League;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Getter
 @NoArgsConstructor
+@ToString
 public class LeagueDto {
     private String id;
     private String slug;

@@ -1,22 +1,22 @@
-package com.kingjakeu.lolesports.api.league.domain;
+package com.kingjakeu.lolesports.api.tournament.domain;
 
-import com.kingjakeu.lolesports.api.tournament.domain.Tournament;
+import com.kingjakeu.lolesports.api.league.domain.League;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.domain.Persistable;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "LEAGUE_INFO")
-public class League implements Persistable<String> {
+@Table(name = "TOURNAMENT_INFO")
+public class Tournament implements Persistable<String> {
     @Id
     @Column(name = "ID", length = 20)
     private String id;
@@ -24,30 +24,26 @@ public class League implements Persistable<String> {
     @Column(name = "SLUG", nullable = false, length = 50)
     private String slug;
 
-    @Column(name = "NAME", nullable = false, length = 100)
-    private String name;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "LEAGUE_ID")
+    private League league;
 
-    @Column(name = "REGION", nullable = false, length = 100)
-    private String region;
+    @Column(name = "START_DATE")
+    private LocalDate startDate;
 
-    @Lob
-    @Column(name = "IMAGE_URL")
-    private String imageUrl;
+    @Column(name = "END_DATE")
+    private LocalDate endDate;
 
     @CreationTimestamp
-    @Column(name = "CREATE_DTM", nullable = false, updatable = false,  columnDefinition = "timestamp")
+    @Column(name = "CREATE_DTM", nullable = false, updatable = false, columnDefinition = "timestamp")
     private LocalDateTime createDateTime;
 
     @UpdateTimestamp
     @Column(name = "UPDATE_DTM", nullable = false, columnDefinition = "timestamp")
     private LocalDateTime updateDateTime;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "league")
-    private List<Tournament> tournamentList;
-
     @Override
     public boolean isNew() {
         return true;
     }
 }
-
