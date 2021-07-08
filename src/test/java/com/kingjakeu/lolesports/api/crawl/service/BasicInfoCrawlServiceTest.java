@@ -18,6 +18,9 @@ class BasicInfoCrawlServiceTest {
     @Autowired
     BasicInfoCrawlService basicInfoCrawlService;
 
+    @Autowired
+    ParticipantInfoCrawlService participantInfoCrawlService;
+
     @Test
     @Order(1)
     void crawlLeagueInfo() {
@@ -28,5 +31,17 @@ class BasicInfoCrawlServiceTest {
     @Order(2)
     void crawlTournamentInfoByLeagueId() {
         basicInfoCrawlService.crawlTournamentInfoByLeagueId("98767991310872058");
+    }
+
+    @Test
+    @Order(3)
+    void crawlTeamInfoByLeagueId(){
+        this.participantInfoCrawlService.crawlTeamInfoByLeagueId("98767991310872058");
+    }
+
+    @Test
+    @Order(4)
+    void crawlMatchInfoByTournamentId() {
+        basicInfoCrawlService.crawlMatchInfoByTournamentId("105522984810490982");
     }
 }
