@@ -54,4 +54,5 @@ public class ParticipantInfoCrawlService {
         }
         this.teamRepository.saveAll(teamList);
     }
+
 }

@@ -9,6 +9,7 @@ import org.jsoup.nodes.Document;
 
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -23,6 +24,18 @@ public class Crawler {
                 .cookie("auth", "token")
                 .timeout(3000)
                 .post();
+    }
+
+    /**
+     * Crawl Web Json Data as Object without any params and header
+     * @param url url
+     * @param returnTypeReference return object type
+     * @param <T> type
+     * @return Crawled Data Object
+     */
+    public static <T> T doGetObject(String url,
+                                    TypeReference<T> returnTypeReference) {
+        return doGetObject(url, new HashMap<String, String>(), new HashMap<String, String>(), returnTypeReference);
     }
 
     /**
@@ -47,6 +60,7 @@ public class Crawler {
             );
             return new ObjectMapper().readValue(result, returnTypeReference);
         }catch (JsonProcessingException jsonProcessingException){
+            log.error(jsonProcessingException.getMessage(), jsonProcessingException);
             throw new RuntimeException("Error");
         }
 
