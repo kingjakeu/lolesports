@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "LEAGUE_INFO")
-public class League implements Persistable<String> {
+public class League {
     @Id
     @Column(name = "ID", length = 20)
     private String id;
@@ -44,10 +44,5 @@ public class League implements Persistable<String> {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "league")
     private List<Tournament> tournamentList;
-
-    @Override
-    public boolean isNew() {
-        return true;
-    }
 }
 

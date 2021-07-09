@@ -9,7 +9,7 @@ public enum RiotEsportsApi {
     TOURNAMENT_INFO("/getTournamentsForLeague"),
     LEAGUE_SCHEDULE_INFO("/getSchedule"),
     TEAM_INFO("/getTeams"),
-
+    GAME_INFO("/getEventDetails"),
 
     ;
     private String uri;

@@ -2,13 +2,19 @@ package com.kingjakeu.lolesports.api.crawl.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.kingjakeu.lolesports.api.common.constant.RiotEsportsApi;
+import com.kingjakeu.lolesports.api.crawl.config.GamePediaConfig;
 import com.kingjakeu.lolesports.api.crawl.dto.LolEsportDataDto;
+import com.kingjakeu.lolesports.api.crawl.dto.game.GameDataDto;
+import com.kingjakeu.lolesports.api.crawl.dto.game.GameEventDto;
 import com.kingjakeu.lolesports.api.crawl.dto.league.LeagueDataDto;
 import com.kingjakeu.lolesports.api.crawl.dto.schedule.ScheduleDataDto;
 import com.kingjakeu.lolesports.api.crawl.dto.schedule.ScheduleDto;
 import com.kingjakeu.lolesports.api.crawl.dto.schedule.ScheduleEventDto;
 import com.kingjakeu.lolesports.api.crawl.dto.schedule.ScheduleTeamDto;
 import com.kingjakeu.lolesports.api.crawl.dto.tournament.TournamentDataDto;
+import com.kingjakeu.lolesports.api.exception.ResourceNotFoundException;
+import com.kingjakeu.lolesports.api.game.dao.GameRepository;
+import com.kingjakeu.lolesports.api.game.domain.Game;
 import com.kingjakeu.lolesports.api.league.dao.LeagueRepository;
 import com.kingjakeu.lolesports.api.league.domain.League;
 import com.kingjakeu.lolesports.api.match.dao.MatchRepository;
@@ -16,20 +22,28 @@ import com.kingjakeu.lolesports.api.match.domain.Match;
 import com.kingjakeu.lolesports.api.team.dao.TeamRepository;
 import com.kingjakeu.lolesports.api.tournament.dao.TournamentRepository;
 import com.kingjakeu.lolesports.api.tournament.domain.Tournament;
+import com.kingjakeu.lolesports.util.Crawler;
 import lombok.RequiredArgsConstructor;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-public class BasicInfoCrawlService {
+public class MatchInfoCrawlService {
 
     private final RiotEsportsComponent riotEsportsComponent;
+    private final GamePediaConfig gamePediaConfig;
+
     private final LeagueRepository leagueRepository;
     private final TournamentRepository tournamentRepository;
     private final TeamRepository teamRepository;
     private final MatchRepository matchRepository;
+    private final GameRepository gameRepository;
 
     /**
      * Crawl League Info Data
@@ -143,4 +157,84 @@ public class BasicInfoCrawlService {
         return matchList;
     }
 
+    /**
+     * Crawl Game Info By Match
+     * @param matchId matchId
+     */
+    public void crawlGameInfoByMatchId(String matchId){
+        // Find Match Info
+        Optional<Match> optionalMatch = this.matchRepository.findById(matchId);
+        if(optionalMatch.isEmpty()) throw new ResourceNotFoundException(matchId);
+        Match match = optionalMatch.get();
+
+        // Set requesting parameter
+        Map<String, String> parameters = this.riotEsportsComponent.createDefaultLolEsportParameters();
+        parameters.put("id", matchId);
+
+        // Crawl Game Info via esports API
+        LolEsportDataDto<GameDataDto> resultDto = this.riotEsportsComponent.crawlLolEsportApi(
+                RiotEsportsApi.GAME_INFO.getUri(),
+                parameters,
+                new TypeReference<>() {}
+        );
+
+        // Save Game Infos
+        GameEventDto gameEventDto = resultDto.getData().getEvent();
+        this.gameRepository.saveAll(gameEventDto.toGameEntities(match));
+    }
+
+    /**
+     * Crawl MatchHistory Link for Game Details By Game ID
+     * @param gameId gameId
+     */
+    public void crawlMatchHistoryLinkByGameId(String gameId){
+        // Find Game Info
+        Optional<Game> optionalGame = this.gameRepository.eagerFindGameById(gameId);
+        if(optionalGame.isEmpty()) throw new ResourceNotFoundException(gameId);
+        Game game = optionalGame.get();
+
+        // Crawl Gamepedia page
+        Document document = Crawler.doGetDocument(
+                this.gamePediaConfig.getMatchHistoryUrl(
+                        game
+                        .getMatch()
+                        .getTournament()
+                        .getLeague()
+                        .getName())
+        );
+        // Get Match History Link from doc
+        String matchHistoryLink = this.parseMatchHistoryLink(document, game);
+
+        // Save Match history Link
+        game.setMatchHistoryUrl(matchHistoryLink);
+        this.gameRepository.save(game);
+    }
+
+    /**
+     * Parse Match History Link from GamePedia page
+     * @param document page doc
+     * @param game game
+     * @return matchHistory Link or null
+     */
+    private String parseMatchHistoryLink(Document document, Game game){
+        Elements rowElements = document.getElementsByClass("mhgame-red multirow-highlighter");
+        rowElements.addAll(document.getElementsByClass("mhgame-blue multirow-highlighter"));
+
+        for(Element row : rowElements){
+            String gameDate = row.getElementsByClass("mhgame-result").get(0).text();
+
+            Elements cells = row.getElementsByTag("a");
+
+            String blueTeamLinkId = cells.get(1).attr("data-to-id");
+            String redTeamLinkId = cells.get(2).attr("data-to-id");
+
+            String matchHistoryLink = cells.get(15).attr("href");
+            if(game.getMatch().startDateEqualsTo(LocalDate.parse(gameDate))){
+                if(game.getBlueTeam().isUrlNameEquals(blueTeamLinkId) && game.getRedTeam().isUrlNameEquals(redTeamLinkId)){
+                    return matchHistoryLink;
+                }
+            }
+        }
+        return null;
+    }
 }

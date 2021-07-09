@@ -4,7 +4,6 @@ import com.kingjakeu.lolesports.api.league.domain.League;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.data.domain.Persistable;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -15,7 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "TEAM_INFO")
-public class Team implements Persistable<String> {
+public class Team {
     @Id
     @Column(name = "ID", length = 20)
     private String id;
@@ -45,8 +44,10 @@ public class Team implements Persistable<String> {
     @Column(name = "UPDATE_DTM", nullable = false, columnDefinition = "timestamp")
     private LocalDateTime updateDateTime;
 
-    @Override
-    public boolean isNew() {
-        return true;
+    public boolean isUrlNameEquals(String urlName){
+         return this.name
+                 .replace(" ", "_")
+                 .replace(".", "2e")
+                 .equals(urlName);
     }
 }

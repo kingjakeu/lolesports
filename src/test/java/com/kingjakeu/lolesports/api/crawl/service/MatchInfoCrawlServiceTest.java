@@ -12,9 +12,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @TestMethodOrder(value = MethodOrderer.OrderAnnotation.class)
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
-class BasicInfoCrawlServiceTest {
+class MatchInfoCrawlServiceTest {
     @Autowired
-    BasicInfoCrawlService basicInfoCrawlService;
+    MatchInfoCrawlService matchInfoCrawlService;
 
     @Autowired
     ParticipantInfoCrawlService participantInfoCrawlService;
@@ -22,13 +22,13 @@ class BasicInfoCrawlServiceTest {
     @Test
     @Order(1)
     void crawlLeagueInfo() {
-        basicInfoCrawlService.crawlLeagueInfo();
+        this.matchInfoCrawlService.crawlLeagueInfo();
     }
 
     @Test
     @Order(2)
     void crawlTournamentInfoByLeagueId() {
-        basicInfoCrawlService.crawlTournamentInfoByLeagueId("98767991310872058");
+        this.matchInfoCrawlService.crawlTournamentInfoByLeagueId("98767991310872058");
     }
 
     @Test
@@ -40,6 +40,18 @@ class BasicInfoCrawlServiceTest {
     @Test
     @Order(4)
     void crawlMatchInfoByTournamentId() {
-        basicInfoCrawlService.crawlMatchInfoByTournamentId("105522984810490982");
+        this.matchInfoCrawlService.crawlMatchInfoByTournamentId("106269654659501670");
+    }
+
+    @Test
+    @Order(5)
+    void crawlGameInfoByMatchId() {
+        this.matchInfoCrawlService.crawlGameInfoByMatchId("106269654661205609");
+    }
+
+    @Test
+    @Order(6)
+    void crawlMatchHistoryLinkByGameId() {
+        this.matchInfoCrawlService.crawlMatchHistoryLinkByGameId("106269654661205610");
     }
 }

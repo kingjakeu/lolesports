@@ -3,7 +3,6 @@ package com.kingjakeu.lolesports.api.champion.domain;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.data.domain.Persistable;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -14,7 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "CHAMPION")
-public class Champion implements Persistable<String> {
+public class Champion {
 
     @Id
     @Column(name = "ID", length = 20)
@@ -40,9 +39,4 @@ public class Champion implements Persistable<String> {
     @UpdateTimestamp
     @Column(name = "UPDATE_DTM", nullable = false, columnDefinition = "timestamp")
     private LocalDateTime updateDateTime;
-
-    @Override
-    public boolean isNew() {
-        return true;
-    }
 }

@@ -46,7 +46,6 @@ public class ParticipantInfoCrawlService {
         List<TeamDto> teamDtoList = resultDto.getData().getTeams();
 
         // Save Team and Player Info List
-        List<Team> teamList = new ArrayList<>();
         for(TeamDto teamDto : teamDtoList){
             // Only currently active team in league
             if(teamDto.isActiveTeam()

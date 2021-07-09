@@ -12,6 +12,12 @@ leagueoflegends:
     item: item
     rune: runesReforged
 
+gamepedia:
+  url: https://lol.gamepedia.com/{league}/{tournament}/{component}
+  tournament: 2021_Season/Summer_Season
+  match-history: Match_History
+
+
 spring:
   jpa:
     show-sql: true
