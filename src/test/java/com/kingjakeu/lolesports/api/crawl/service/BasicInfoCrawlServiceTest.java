@@ -9,8 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @TestMethodOrder(value = MethodOrderer.OrderAnnotation.class)
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -36,7 +34,7 @@ class BasicInfoCrawlServiceTest {
     @Test
     @Order(3)
     void crawlTeamInfoByLeagueId(){
-        this.participantInfoCrawlService.crawlTeamInfoByLeagueId("98767991310872058");
+        this.participantInfoCrawlService.crawlParticipantInfoByLeagueId("98767991310872058");
     }
 
     @Test
