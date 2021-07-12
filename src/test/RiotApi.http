@@ -1,0 +1,20 @@
+GET https://auth.riotgames.com/api/v1/authorization
+
+###
+
+POST https://auth.riotgames.com/api/v1/authorization
+content-type: application/json
+
+{"client_id":"rso-web-client-prod","login_hint":"na","redirect_uri":"https://login.leagueoflegends.com/oauth2-callback","response_type":"code","scope":"openid","state":"QEpsWEQh1kAXDVDwtan633r_9-LcwzVOZ9Ija6vbbC8","ui_locales":"en-us"}
+###
+
+PUT https://auth.riotgames.com/api/v1/authorization
+content-type: application/json
+cookie: ssid=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzc2lkIjoiYXZ1Q2xuU3BTMmFBd0l2V25Rb3FTdy5iTXktUnExTzhuQ2xSTjYtLU90elpnIiwic3ViIjoiNTA2ZjM5ZjAtNjFlZS01NzRhLWExOGEtMGIwMGMxOTEzZjA2IiwiaWF0IjoxNjI2MDYyOTc0fQ.h2lR9ZHb9l8fFLyN2KvNDiMf-PeO2nnd2dC3dcx81zU;
+
+{"type":"auth","username":"jakehsu","password":"rpdladlek12!","remember":false,"language":"en_US"}
+
+###
+GET https://acs.leagueoflegends.com/v1/stats/game/ESPORTSTMNT01/2136378?gameHash=b5405aa6fd022610
+content-type: application/json
+cookie: tdid=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijc5ZmFjYzcxLTJiOGMtNGU0YS05Y2QxLTQzOGVjYmZjNDAwZCIsIm5vbmNlIjoibEpTdnQ1UUJYaFk9IiwiaWF0IjoxNjI2MDU3MjU1fQ.K8ZjWOhrs2G3gwCVhkdYVucguceUGiVrTEa6VY8VaD4;

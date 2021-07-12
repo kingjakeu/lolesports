@@ -19,6 +19,18 @@ class MatchInfoCrawlServiceTest {
     @Autowired
     ParticipantInfoCrawlService participantInfoCrawlService;
 
+    @Autowired
+    GameComponentCrawlService gameComponentCrawlService;
+
+    @Autowired
+    GameDetailCrawlService gameDetailCrawlService;
+
+    @Test
+    @Order(0)
+    void crawlGameComponent(){
+        this.gameComponentCrawlService.crawlChampionDataInfo();
+    }
+
     @Test
     @Order(1)
     void crawlLeagueInfo() {
@@ -53,5 +65,11 @@ class MatchInfoCrawlServiceTest {
     @Order(6)
     void crawlMatchHistoryLinkByGameId() {
         this.matchInfoCrawlService.crawlMatchHistoryLinkByGameId("106269654661205610");
+    }
+
+    @Test
+    @Order(7)
+    void crawlGameDetailByGameId(){
+        this.gameDetailCrawlService.crawlGameDetailByGameId("106269654661205610");
     }
 }
