@@ -1,12 +1,10 @@
 package com.kingjakeu.lolesports.api.crawl.dto.matchhistory;
 
-import com.kingjakeu.lolesports.api.game.domain.PlayerGameSummary;
+import com.kingjakeu.lolesports.api.game.domain.*;
+import com.kingjakeu.lolesports.api.player.domain.Player;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @ToString
@@ -143,41 +141,40 @@ public class StatDto {
                 .build();
     }
 
-    private List<String> getItemList(){
-        List<String> itemList = new ArrayList<>();
-        if(this.item0 != null) itemList.add(this.item0.toString());
-        if(this.item1 != null) itemList.add(this.item1.toString());
-        if(this.item2 != null) itemList.add(this.item2.toString());
-        if(this.item3 != null) itemList.add(this.item3.toString());
-        if(this.item4 != null) itemList.add(this.item4.toString());
-        if(this.item5 != null) itemList.add(this.item5.toString());
-        if(this.item6 != null) itemList.add(this.item6.toString());
-        return itemList;
+    public PlayerItemHistory toPlayerItemHistory(Game game, Player player){
+        return PlayerItemHistory.builder()
+                .playerItemHistoryId(PlayerItemHistoryId.builder()
+                        .gameId(game.getId())
+                        .playerId(player.getId())
+                        .build())
+                .game(game)
+                .player(player)
+                .item0(this.item0.toString())
+                .item1(this.item1.toString())
+                .item2(this.item2.toString())
+                .item3(this.item3.toString())
+                .item4(this.item4.toString())
+                .item5(this.item5.toString())
+                .item6(this.item6.toString())
+                .build();
     }
 
-    private List<String> getParentRunes(){
-        List<String> runeList = new ArrayList<>();
-        runeList.add(this.perkPrimaryStyle.toString());
-        runeList.add(this.perkSubStyle.toString());
-        return runeList;
-    }
-
-    private List<String> getSubRunes(){
-        List<String> runeList = new ArrayList<>();
-        runeList.add(this.perk0.toString());
-        runeList.add(this.perk1.toString());
-        runeList.add(this.perk2.toString());
-        runeList.add(this.perk3.toString());
-        runeList.add(this.perk4.toString());
-        runeList.add(this.perk5.toString());
-        return runeList;
-    }
-
-    private List<String> getStatRunes(){
-        List<String> statRunes = new ArrayList<>();
-        statRunes.add(this.statPerk0.toString());
-        statRunes.add(this.statPerk1.toString());
-        statRunes.add(this.statPerk2.toString());
-        return statRunes;
+    public PlayerRuneHistory toPlayerRuneHistory(Game game, Player player){
+        return PlayerRuneHistory.builder()
+                .playerRuneHistoryId(PlayerRuneHistoryId.builder().build())
+                .game(game)
+                .player(player)
+                .primaryRuneStyle(this.perkPrimaryStyle.toString())
+                .subRuneStyle(this.perkSubStyle.toString())
+                .runePick0(this.perk0.toString())
+                .runePick1(this.perk1.toString())
+                .runePick2(this.perk2.toString())
+                .runePick3(this.perk3.toString())
+                .runePick4(this.perk4.toString())
+                .runePick5(this.perk5.toString())
+                .statRune0(this.statPerk0.toString())
+                .statRune1(this.statPerk1.toString())
+                .statRune2(this.statPerk2.toString())
+                .build();
     }
 }
