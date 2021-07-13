@@ -2,7 +2,8 @@
 
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fkingjakeu%2Flolesports&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
-Lol-Esports is a server application which provides League of Legends pro league data.  
+Lol-Esports is a server application which provides League of Legends pro league data. 
+
 This application crawls data by using Riot's unofficial API and Gamepedia WebPage and remodel data as relational data model for RDBMS.  
 
 ## Tech Stacks
@@ -29,6 +30,8 @@ This application crawls data by using Riot's unofficial API and Gamepedia WebPag
 
 
 ## Data Model Architecture
+
+![data_model](doc/image/data_model.png "data_model")
 
 ## Configuration
  
