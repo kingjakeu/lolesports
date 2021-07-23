@@ -1,5 +1,6 @@
 package com.kingjakeu.lolesports.util;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
@@ -10,10 +11,8 @@ import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
-
+@Slf4j
 public class HttpRequester {
-
-
 
     /**
      * GET Json Object as String from requested URL
