@@ -7,6 +7,7 @@ import com.kingjakeu.lolesports.api.exception.CrawlProcessException;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.springframework.http.ResponseEntity;
 
 
 import java.io.IOException;
@@ -66,16 +67,21 @@ public class Crawler {
                                     TypeReference<T> returnTypeReference) {
         try{
             log.info(url);
-            String result = HttpRequester.doGetJsonString(
-                    url,
-                    httpHeaders,
-                    parameters
-            );
+            String result = doGetResponseEntity(url, httpHeaders, parameters).getBody();
             return new ObjectMapper().readValue(result, returnTypeReference);
         }catch (JsonProcessingException jsonProcessingException){
             log.error(jsonProcessingException.getMessage(), jsonProcessingException);
             throw new CrawlProcessException();
         }
+    }
 
+    public static ResponseEntity<String> doGetResponseEntity(String url,
+                                                             Map<String, String> httpHeaders,
+                                                             Map<String, String> parameters) {
+        return HttpRequester.doGetJsonString(
+                url,
+                httpHeaders,
+                parameters
+        );
     }
 }

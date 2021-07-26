@@ -25,19 +25,19 @@ GET https://esports-api.lolesports.com/persisted/gw/getSchedule?hl=ko-KR&leagueI
 x-api-key: 0TvQnueqKa5mxJntVWt0w4LpLfEkrV1Ta8rQBb9Z
 
 ### 경기 디테일 = matchID  106269654661664669
-GET https://esports-api.lolesports.com/persisted/gw/getEventDetails?hl=ko-KR&id=106269654661664669
+GET https://esports-api.lolesports.com/persisted/gw/getEventDetails?hl=ko-KR&id=106269654661664681
 x-api-key: 0TvQnueqKa5mxJntVWt0w4LpLfEkrV1Ta8rQBb9Z
 
 ### 게임
-GET https://esports-api.lolesports.com/persisted/gw/getGames?hl=ko-KR&id=106269654661664670
+GET https://esports-api.lolesports.com/persisted/gw/getGames?hl=ko-KR&id=106269654661664682
 x-api-key: 0TvQnueqKa5mxJntVWt0w4LpLfEkrV1Ta8rQBb9Z
 
 ###
-GET https://feed.lolesports.com/livestats/v1/window/106269654661664670
+GET https://feed.lolesports.com/livestats/v1/window/106269654661664683?startingTime=2021-07-23T09:06:20.000Z
 x-api-key: 0TvQnueqKa5mxJntVWt0w4LpLfEkrV1Ta8rQBb9Z
 
 ###
-GET https://feed.lolesports.com/livestats/v1/details/106269654661664670?startingTime=2021-07-22T08:10:40.000Z
+GET https://feed.lolesports.com/livestats/v1/details/106269654661664683?startingTime=2021-07-23T09:36:30.000Z
 x-api-key: 0TvQnueqKa5mxJntVWt0w4LpLfEkrV1Ta8rQBb9Z
 
 ###

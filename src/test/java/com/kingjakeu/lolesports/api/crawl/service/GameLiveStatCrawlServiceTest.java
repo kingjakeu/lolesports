@@ -1,5 +1,6 @@
 package com.kingjakeu.lolesports.api.crawl.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -11,7 +12,7 @@ class GameLiveStatCrawlServiceTest {
     GameLiveStatCrawlService gameLiveStatCrawlService;
 
     @Test
-    void crawlGameWindowFrame() {
-        gameLiveStatCrawlService.crawlGameWindowFrame("106269654661664670");
+    void crawlGameWindowFrame() throws InterruptedException, JsonProcessingException {
+        gameLiveStatCrawlService.crawlGameWindowFrame("106269654661664682");
     }
 }

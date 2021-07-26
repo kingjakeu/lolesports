@@ -1,12 +1,16 @@
 package com.kingjakeu.lolesports.api.crawl.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kingjakeu.lolesports.api.crawl.config.RiotFeedLolEsportsConfig;
 import com.kingjakeu.lolesports.api.crawl.dto.livestat.GameStatDto;
 import com.kingjakeu.lolesports.api.crawl.dto.livestat.GameTimelineStatDto;
 import com.kingjakeu.lolesports.api.crawl.dto.livestat.RefinedEventDto;
 import com.kingjakeu.lolesports.util.Crawler;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,42 +24,47 @@ public class GameLiveStatCrawlService {
 
     private final RiotFeedLolEsportsConfig feedLolEsportsConfig;
 
-    public void crawlGameWindowFrame(String gameId){
-        GameStatDto resultDto = Crawler.doGetObject(
-            this.feedLolEsportsConfig.getUrl() + "/window/" + gameId,
-                new TypeReference<>() {}
+    public void crawlGameWindowFrame(String gameId) throws InterruptedException, JsonProcessingException {
+        ResponseEntity<String> responseEntity = Crawler.doGetResponseEntity(
+                this.feedLolEsportsConfig.getUrl() + "/window/" + gameId,
+                new HashMap<>(),
+                new HashMap<>()
         );
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
-        LocalDateTime localDateTime = LocalDateTime.parse(resultDto.getFrames()[0].getRfc460Timestamp(), dateTimeFormatter);
 
-        int sec = (int)(Math.ceil((double) localDateTime.getSecond() / 10) * 10);
-
-        LocalDateTime newLocalDateTime = LocalDateTime.of(
-                localDateTime.getYear(), localDateTime.getMonth(), localDateTime.getDayOfMonth(),
-                localDateTime.getHour(), localDateTime.getMinute(), sec, 0
-        );
-        GameTimelineStatDto gameTimelineStatDto = this.crawlGameDetailFrame(gameId, newLocalDateTime.toString());
-        for(int i=0; i < 10; i++){
-            newLocalDateTime = newLocalDateTime.plusMinutes(1L);
-            GameTimelineStatDto preStatDto = gameTimelineStatDto;
-            gameTimelineStatDto = this.crawlGameDetailFrame(gameId, newLocalDateTime.toString());
-            RefinedEventDto refinedEventDto = gameTimelineStatDto.compareTo(preStatDto);
-            if(refinedEventDto.isEventHappened()){
-                System.out.println(refinedEventDto.getMessage(resultDto.getParticipantMap()));
+        if(responseEntity.getStatusCode().equals(HttpStatus.NO_CONTENT)){
+            // do re-pub
+        }else{
+            GameStatDto resultDto = new ObjectMapper().readValue(responseEntity.getBody(), GameStatDto.class);
+            LocalDateTime gameDateTime = resultDto.getFirstTimeFrame();
+            GameTimelineStatDto gameTimelineStatDto = this.crawlGameDetailFrame(gameId, gameDateTime);
+            // do pub
+            for(int i=0; i < 100; i++){
+                System.out.println(i);
+                gameDateTime = gameDateTime.plusMinutes(1L);
+                GameTimelineStatDto preStatDto = gameTimelineStatDto;
+                gameTimelineStatDto = this.crawlGameDetailFrame(gameId, gameDateTime);
+                if(gameTimelineStatDto == null) break;
+                RefinedEventDto refinedEventDto = gameTimelineStatDto.compareTo(preStatDto);
+                if(refinedEventDto.isEventHappened()){
+                    System.out.println(refinedEventDto.getMessage(resultDto.getParticipantMap()));
+                }
             }
         }
-
     }
 
-    public GameTimelineStatDto crawlGameDetailFrame(String gameId, String startingTime){
+    public GameTimelineStatDto crawlGameDetailFrame(String gameId, LocalDateTime startingTime){
         Map<String, String> requestParameters = new HashMap<>();
-        requestParameters.put("startingTime", startingTime+"Z");
+        requestParameters.put("startingTime", startingTime.toString()+"Z");
         GameTimelineStatDto gameTimelineStatDto = Crawler.doGetObject(
                 this.feedLolEsportsConfig.getUrl() + "/details/" + gameId,
-                new HashMap<String, String>(),
+                new HashMap<>(),
                 requestParameters,
                 new TypeReference<>() {}
         );
+        if(gameTimelineStatDto.getFirstTimeFrame().isBefore(startingTime)){
+            // end - pub
+            return null;
+        }
         return gameTimelineStatDto;
     }
 }

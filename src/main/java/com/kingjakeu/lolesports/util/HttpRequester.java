@@ -3,6 +3,7 @@ package com.kingjakeu.lolesports.util;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
@@ -22,7 +23,7 @@ public class HttpRequester {
      * @param queryParams request params
      * @return result json objectString
      */
-    public static String doGetJsonString(String url,
+    public static ResponseEntity<String> doGetJsonString(String url,
                                          Map<String, String> httpHeader,
                                          Map<String, String> queryParams) {
         // Create Get-WebClient
@@ -46,8 +47,11 @@ public class HttpRequester {
         }
 
         // Send GET Request and get response as String
-        Mono<String> response = headersSpec.retrieve().bodyToMono(String.class);
-        return response.block();
+        Mono<ResponseEntity<String>> entityMono = headersSpec
+                .retrieve()
+                .toEntity(String.class);
+
+        return entityMono.block();
     }
 
     /**
