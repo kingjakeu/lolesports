@@ -11,12 +11,9 @@ import java.time.format.DateTimeFormatter;
 public class GameTimelineStatDto {
     private GameTimelineFrameDto[] frames;
 
-    public RefinedEventDto compareTo(GameTimelineStatDto preDto){
-        GameTimelineFrameDto preFrameDto = preDto.getFrames()[0];
-        GameTimelineFrameDto currentFrameDto = this.frames[0];
-        return currentFrameDto.compareTo(preFrameDto);
+    public GameTimelineFrameDto getFirstGameTimelineFrameDto(){
+        return this.frames[0];
     }
-
     public LocalDateTime getFirstTimeFrame(){
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
         return LocalDateTime.parse(this.getFrames()[0].getRfc460Timestamp(), dateTimeFormatter);

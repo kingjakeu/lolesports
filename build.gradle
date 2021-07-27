@@ -30,6 +30,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+    implementation ('org.springframework.boot:spring-boot-starter-data-redis')
 }
 
 test {

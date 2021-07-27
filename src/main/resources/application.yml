@@ -40,7 +40,9 @@ spring:
     driver-class-name: org.mariadb.jdbc.Driver
     username: admin #lolesports
     password: aktmxj12! #lol2012
-
+  redis:
+    host: 3.36.165.58
+    port: 6379
 # log properties
 logging:
   level:

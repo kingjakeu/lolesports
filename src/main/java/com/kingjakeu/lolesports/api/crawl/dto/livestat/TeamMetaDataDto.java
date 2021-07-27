@@ -12,10 +12,10 @@ public class TeamMetaDataDto {
     private String esportsTeamId;
     private ParticipantMetaDataDto[] participantMetadata;
 
-    public Map<Integer, String> getParticipantMap(){
-        Map<Integer, String> participantMap = new HashMap<>();
+    public Map<String, String> getParticipantMap(){
+        Map<String, String> participantMap = new HashMap<>();
         for(ParticipantMetaDataDto metaDataDto : this.participantMetadata){
-            participantMap.put(metaDataDto.getParticipantId(), metaDataDto.getSummonerName());
+            participantMap.put(String.valueOf(metaDataDto.getParticipantId()), metaDataDto.getSummonerName());
         }
         return participantMap;
     }

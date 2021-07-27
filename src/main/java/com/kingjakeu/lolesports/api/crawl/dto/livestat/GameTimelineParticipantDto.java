@@ -1,5 +1,7 @@
 package com.kingjakeu.lolesports.api.crawl.dto.livestat;
 
+import com.kingjakeu.lolesports.api.live.domain.PlayerLiveStat;
+import com.kingjakeu.lolesports.api.live.dto.LiveGameEventDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -28,4 +30,33 @@ public class GameTimelineParticipantDto {
     private Integer[] items;
     private PerkMetaData perkMetadata;
     private String[] abilities;
+
+    public PlayerLiveStat toPlayerLiveStat(){
+        return PlayerLiveStat.builder()
+                .level(this.level)
+                .kills(this.kills)
+                .deaths(this.deaths)
+                .assists(this.assists)
+                .totalGoldEarned(this.totalGoldEarned)
+                .creepScore(this.creepScore)
+                .killParticipation(this.killParticipation)
+                .championDamageShare(this.championDamageShare)
+                .items(this.items)
+                .build();
+    }
+
+    public LiveGameEventDto compareTo(PlayerLiveStat playerLiveStat){
+        LiveGameEventDto liveGameEventDto = new LiveGameEventDto();
+        String playerId = String.valueOf(this.getParticipantId());
+        if(playerLiveStat.getKills() < this.getKills()){
+            liveGameEventDto.getKillPlayer().add(playerId);
+        }
+        if(playerLiveStat.getDeaths() < this.getDeaths()){
+            liveGameEventDto.getDeathPlayer().add(playerId);
+        }
+        if(playerLiveStat.getAssists() < this.getAssists()){
+            liveGameEventDto.getAssistPlayer().add(playerId);
+        }
+        return liveGameEventDto;
+    }
 }

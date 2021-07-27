@@ -16,10 +16,10 @@ public class GameStatDto {
     private GameMetaDataDto gameMetadata;
     private GameFrameDto[] frames;
 
-    public Map<Integer, String> getParticipantMap(){
-        Map<Integer, String> participantMap = new HashMap<>();
+    public Map<String, String> getParticipantMap(){
+        Map<String, String> participantMap = new HashMap<>();
         participantMap.putAll(this.gameMetadata.getBlueTeamMetadata().getParticipantMap());
-        participantMap.putAll(this.getGameMetadata().getRedTeamMetadata().getParticipantMap());
+        participantMap.putAll(this.gameMetadata.getRedTeamMetadata().getParticipantMap());
         return participantMap;
     }
 
