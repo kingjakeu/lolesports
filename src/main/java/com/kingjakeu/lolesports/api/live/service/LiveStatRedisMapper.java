@@ -3,6 +3,7 @@ package com.kingjakeu.lolesports.api.live.service;
 import com.kingjakeu.lolesports.api.live.domain.PlayerLiveStat;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.redis.hash.HashMapper;
 import org.springframework.data.redis.hash.ObjectHashMapper;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
@@ -37,5 +38,17 @@ public class LiveStatRedisMapper {
     public PlayerLiveStat getPlayerStatHash(String gameId, String playerId){
         this.redisTemplate.setHashValueSerializer(new Jackson2JsonRedisSerializer<>(PlayerLiveStat.class));
         return (PlayerLiveStat) this.redisTemplate.opsForHash().get("gameId:"+gameId+":player-stat", playerId);
+    }
+
+    public void savePlayerDamageShare(String gameId, String playerId, Double damageShare){
+        this.redisTemplate.opsForZSet().add("gameId:"+gameId+":player-damage", playerId, damageShare);
+    }
+
+    public Set<String> getPlayerDamageShare(String gameId){
+        return this.redisTemplate.opsForZSet().range("gameId:"+gameId+":player-damage", 0, -1);
+    }
+
+    public Set<ZSetOperations.TypedTuple<String>> getPlayerDamageShareWithScore(String gameId){
+        return this.redisTemplate.opsForZSet().rangeWithScores("gameId:"+gameId+":player-damage", 0, -1);
     }
 }

@@ -12,6 +12,7 @@ import com.kingjakeu.lolesports.api.live.service.LiveStatRedisMapper;
 import com.kingjakeu.lolesports.util.Crawler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +30,7 @@ public class GameLiveStatCrawlService {
     private final LiveStatRedisMapper liveStatRedisMapper;
     private final RiotFeedLolEsportsConfig feedLolEsportsConfig;
 
-    public void crawlGameWindowFrame(String gameId) throws InterruptedException, JsonProcessingException {
+    public void crawlGameWindowFrame(String gameId) throws JsonProcessingException {
         ResponseEntity<String> responseEntity = Crawler.doGetResponseEntity(
                 this.feedLolEsportsConfig.getUrl() + "/window/" + gameId,
                 new HashMap<>(),
@@ -57,7 +59,17 @@ public class GameLiveStatCrawlService {
                 this.checkEventHappened(gameId, gameTimelineStatDto.getFirstGameTimelineFrameDto().getParticipants());
                 this.savePlayerStat(gameId, gameTimelineStatDto.getFirstGameTimelineFrameDto().getParticipants());
             }
+            this.checkDamageShareRank(gameId);
         }
+    }
+
+    private void checkDamageShareRank(String gameId){
+        Set<ZSetOperations.TypedTuple<String>> damageRank = this.liveStatRedisMapper.getPlayerDamageShareWithScore(gameId);
+        StringBuilder sb  = new StringBuilder();
+        for(ZSetOperations.TypedTuple<String> rank : damageRank){
+            sb.append(rank.getValue()).append("-").append(rank.getScore()).append("\n");
+        }
+        System.out.println(sb.toString());
     }
 
     private void checkEventHappened(String gameId, GameTimelineParticipantDto[] participantDtos){
@@ -81,6 +93,11 @@ public class GameLiveStatCrawlService {
                     gameId,
                     String.valueOf(participantDto.getParticipantId()),
                     participantDto.toPlayerLiveStat()
+            );
+            this.liveStatRedisMapper.savePlayerDamageShare(
+                    gameId,
+                    String.valueOf(participantDto.getParticipantId()),
+                    participantDto.getChampionDamageShare()
             );
         }
     }
