@@ -1,5 +1,6 @@
 package com.kingjakeu.lolesports.api.crawl.dto.livestat;
 
+import com.kingjakeu.lolesports.api.live.dto.LiveGameStatDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -15,6 +16,18 @@ public class GameStatDto {
     private String esportsMatchId;
     private GameMetaDataDto gameMetadata;
     private GameFrameDto[] frames;
+
+    public LiveGameStatDto toLiveGameStatDto(){
+        GameFrameDto gameFrameDto = frames[0];
+        return LiveGameStatDto.builder()
+                .gameFrameDateTime(this.getFirstTimeFrame().toString())
+                .playerNameMap(this.getParticipantMap())
+                .blueTeamStatDto(gameFrameDto.getBlueTeam().toLiveTeamStatDto())
+                .redTeamStatDto(gameFrameDto.getRedTeam().toLiveTeamStatDto())
+                .bluePlayerStatDto(gameFrameDto.getBlueTeam().toLivePlayerStatDtoMap())
+                .redPlayerStatDto(gameFrameDto.getRedTeam().toLivePlayerStatDtoMap())
+                .build();
+    }
 
     public Map<String, String> getParticipantMap(){
         Map<String, String> participantMap = new HashMap<>();

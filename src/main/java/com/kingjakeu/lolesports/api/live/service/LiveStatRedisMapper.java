@@ -1,6 +1,8 @@
 package com.kingjakeu.lolesports.api.live.service;
 
+import com.kingjakeu.lolesports.api.common.constant.CommonCode;
 import com.kingjakeu.lolesports.api.live.domain.PlayerLiveStat;
+import com.kingjakeu.lolesports.api.live.dto.LiveGameStatDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -19,6 +21,16 @@ import java.util.Set;
 public class LiveStatRedisMapper {
     private final RedisTemplate redisTemplate;
     private HashMapper<Object, byte[], byte[]> mapper = new ObjectHashMapper();
+
+    public void saveLiveGameStat(String gameId, LiveGameStatDto liveGameStatDto){
+        this.redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(LiveGameStatDto.class));
+        this.redisTemplate.opsForValue().set("gameId:"+gameId, liveGameStatDto);
+    }
+
+    public LiveGameStatDto getLiveGameStat(String gameId){
+        this.redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(LiveGameStatDto.class));
+        return (LiveGameStatDto) this.redisTemplate.opsForValue().get("gameId:"+gameId);
+    }
 
     public void savePlayerHash(String gameId, Map<String, String> playerHash){
         this.redisTemplate.setHashValueSerializer(new StringRedisSerializer());

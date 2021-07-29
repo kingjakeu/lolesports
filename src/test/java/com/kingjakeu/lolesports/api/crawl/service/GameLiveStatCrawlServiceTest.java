@@ -13,6 +13,6 @@ class GameLiveStatCrawlServiceTest {
 
     @Test
     void crawlGameWindowFrame() throws InterruptedException, JsonProcessingException {
-        gameLiveStatCrawlService.crawlGameWindowFrame("106269654661664682");
+        gameLiveStatCrawlService.test("106269654661533474");
     }
 }

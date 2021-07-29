@@ -7,7 +7,7 @@ import java.util.List;
 
 @Builder
 @AllArgsConstructor
-public class LiveGameEventMessageDto {
+public class    LiveGameEventMessageDto {
     private List<String> killPlayer;
     private List<String> deathPlayer;
     private List<String> assistPlayer;

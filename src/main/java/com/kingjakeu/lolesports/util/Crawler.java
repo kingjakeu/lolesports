@@ -78,6 +78,7 @@ public class Crawler {
     public static ResponseEntity<String> doGetResponseEntity(String url,
                                                              Map<String, String> httpHeaders,
                                                              Map<String, String> parameters) {
+        log.info(url);
         return HttpRequester.doGetJsonString(
                 url,
                 httpHeaders,
