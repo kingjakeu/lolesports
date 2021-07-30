@@ -5,24 +5,23 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kingjakeu.lolesports.api.crawl.config.RiotFeedLolEsportsConfig;
 import com.kingjakeu.lolesports.api.crawl.dto.livestat.*;
-import com.kingjakeu.lolesports.api.live.domain.PlayerLiveStat;
 import com.kingjakeu.lolesports.api.live.dto.LiveGameEventDto;
-import com.kingjakeu.lolesports.api.live.dto.LiveGameEventMessageDto;
 import com.kingjakeu.lolesports.api.live.dto.LiveGameStatDto;
 import com.kingjakeu.lolesports.api.live.service.LiveStatRedisMapper;
 import com.kingjakeu.lolesports.util.Crawler;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.ZSetOperations;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GameLiveStatCrawlService {
@@ -31,124 +30,105 @@ public class GameLiveStatCrawlService {
     private final RiotFeedLolEsportsConfig feedLolEsportsConfig;
 
     public void test(String gameId) throws JsonProcessingException, InterruptedException {
-        for (int i = 0; i < 30; i++) {
-            System.out.println(i);
-            this.crawlGameWindowFrame(gameId);
+        LiveGameStatDto liveGameStatDto = this.crawlGameStartTimeFrame(gameId);
+        if(!liveGameStatDto.isEmptyGameFrameDateTime()){
+            while (true){
+                String gameFrame = liveGameStatDto.getGameFrameDateTime();
+                liveGameStatDto = this.crawlGameLiveStatByFrame(gameId);
+                if(gameFrame.equals(liveGameStatDto.getGameFrameDateTime())){
+                    break;
+                }
+                Thread.sleep(10000);
+            }
         }
     }
 
-    public void crawlGameWindowFrame(String gameId) throws JsonProcessingException, InterruptedException {
+    /**
+     * Crawl Game started with start time frame value
+     * @param gameId game ID
+     * @throws JsonProcessingException
+     */
+    public LiveGameStatDto crawlGameStartTimeFrame(String gameId) throws JsonProcessingException {
+        // get game live stat info from redis
         LiveGameStatDto liveGameStatDto = this.liveStatRedisMapper.getLiveGameStat(gameId);
+
+        // if not exist, create one
         if(liveGameStatDto == null){
             liveGameStatDto = new LiveGameStatDto();
         }
-        if(liveGameStatDto.isEmptyGameFrameDateTime() || true){
+
+        // if game frame time not exist
+        if(liveGameStatDto.isEmptyGameFrameDateTime()){
             ResponseEntity<String> responseEntity = Crawler.doGetResponseEntity(
                     this.feedLolEsportsConfig.getUrl() + "/window/" + gameId,
                     new HashMap<>(),
                     new HashMap<>()
             );
+            // get OK when game started, 204 NO CONTENT when not started
             if(responseEntity.getStatusCode().equals(HttpStatus.OK)){
+                // convert result to game live stat info
                 GameStatDto resultDto = new ObjectMapper().readValue(responseEntity.getBody(), GameStatDto.class);
                 liveGameStatDto = resultDto.toLiveGameStatDto();
             }
         }
-
-        if(!liveGameStatDto.isEmptyGameFrameDateTime()){
-            LocalDateTime currentDateTime = this.getCurrentDateTime().plusMinutes(1);
-            //LocalDateTime currentDateTime = liveGameStatDto.convertGameFrameDateTimeInLocalDateTime().plusSeconds(30);
-            if(currentDateTime.isAfter(liveGameStatDto.convertGameFrameDateTimeInLocalDateTime())){
-                Map<String, String> requestParameters = new HashMap<>();
-                requestParameters.put("startingTime", currentDateTime.toString()+".000Z");
-                ResponseEntity<String> responseEntity = Crawler.doGetResponseEntity(
-                        this.feedLolEsportsConfig.getUrl() + "/window/" + gameId,
-                        new HashMap<>(),
-                        requestParameters
-                );
-
-                GameStatDto resultDto = new ObjectMapper().readValue(responseEntity.getBody(), GameStatDto.class);
-                LiveGameStatDto newGameStatDto = resultDto.toLiveGameStatDto();
-
-                LiveGameEventDto liveGameEventDto  = liveGameStatDto.compareTo(newGameStatDto);
-                LiveGameEventMessageDto messageDto = LiveGameEventMessageDto.builder()
-                        .killPlayer(this.liveStatRedisMapper.getPlayerHashList(gameId, liveGameEventDto.getKillPlayer()))
-                        .assistPlayer(this.liveStatRedisMapper.getPlayerHashList(gameId, liveGameEventDto.getAssistPlayer()))
-                        .deathPlayer(this.liveStatRedisMapper.getPlayerHashList(gameId, liveGameEventDto.getDeathPlayer()))
-                        .build();
-                System.out.println(messageDto.getMessage());
-
-                liveGameStatDto = newGameStatDto;
-            }
-
-        }
+        // save game live stat info on redis
         this.liveStatRedisMapper.saveLiveGameStat(gameId, liveGameStatDto);
-        //Thread.sleep(20000);
+        return liveGameStatDto;
     }
 
-    private LocalDateTime getCurrentDateTime(){
-        LocalDateTime localDateTime = LocalDateTime.now(ZoneOffset.UTC);
-        //localDateTime = localDateTime.minusMinutes(1L);
-        int sec = (int)(Math.ceil((double) localDateTime.getSecond() / 10) * 10);
-        sec = sec >= 60 ? 0 : sec;
+    /**
+     * Crawl Game live stat info by timeframe
+     * @param gameId game ID
+     */
+    public LiveGameStatDto crawlGameLiveStatByFrame(String gameId) {
+        // get live stat game info from redis
+        LiveGameStatDto liveGameStatDto = this.liveStatRedisMapper.getLiveGameStat(gameId);
 
-        return LocalDateTime.of(
+        if(!liveGameStatDto.isEmptyGameFrameDateTime()){
+            // set game frame time to crawl
+            LocalDateTime currentDateTime = this.getCurrentDateTime();
+
+            //LocalDateTime currentDateTime = liveGameStatDto.convertGameFrameDateTimeInLocalDateTime().plusMinutes(1L);
+
+            // if last game frame time is before than current
+            log.info("last-"+liveGameStatDto.convertGameFrameDateTimeInLocalDateTime());
+            if(currentDateTime.isAfter(liveGameStatDto.convertGameFrameDateTimeInLocalDateTime())){
+                // crawl live game stat data with game frame time
+                Map<String, String> requestParameters = new HashMap<>();
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+                requestParameters.put("startingTime", currentDateTime.format(dateTimeFormatter)+".000Z");
+                GameStatDto resultDto = Crawler.doGetObject(
+                        this.feedLolEsportsConfig.getUrl() + "/window/" + gameId,
+                        new HashMap<>(),
+                        requestParameters,
+                        new TypeReference<>(){}
+                );
+
+                LiveGameStatDto newGameStatDto = resultDto.toLiveGameStatDto();
+
+                // compare with old data
+                LiveGameEventDto liveGameEventDto  = liveGameStatDto.compareTo(newGameStatDto);
+                System.out.println(liveGameEventDto.getMessage());
+
+                // save new game live stat on redis
+                this.liveStatRedisMapper.saveLiveGameStat(gameId, newGameStatDto);
+                return newGameStatDto;
+            }
+        }
+        return liveGameStatDto;
+    }
+
+    public LocalDateTime getCurrentDateTime(){
+        LocalDateTime localDateTime = LocalDateTime.now(ZoneOffset.UTC);
+        log.info(localDateTime.toString());
+        localDateTime = localDateTime.minusMinutes(2L);
+        int sec = (localDateTime.getSecond() / 10) * 10;
+
+        LocalDateTime newLocalDateTime = LocalDateTime.of(
                 localDateTime.getYear(), localDateTime.getMonth(), localDateTime.getDayOfMonth(),
                 localDateTime.getHour(), localDateTime.getMinute(), sec, 0
         );
-    }
-
-    private void checkDamageShareRank(String gameId){
-        Set<ZSetOperations.TypedTuple<String>> damageRank = this.liveStatRedisMapper.getPlayerDamageShareWithScore(gameId);
-        StringBuilder sb  = new StringBuilder();
-        for(ZSetOperations.TypedTuple<String> rank : damageRank){
-            sb.append(rank.getValue()).append("-").append(rank.getScore()).append("\n");
-        }
-        System.out.println(sb.toString());
-    }
-
-    private void checkEventHappened(String gameId, GameTimelineParticipantDto[] participantDtos){
-        LiveGameEventDto liveGameEventDto = new LiveGameEventDto();
-        for(GameTimelineParticipantDto participantDto : participantDtos){
-            String playerId = String.valueOf(participantDto.getParticipantId());
-            PlayerLiveStat playerLiveStat = this.liveStatRedisMapper.getPlayerStatHash(gameId, playerId);
-            liveGameEventDto.addAll(participantDto.compareTo(playerLiveStat));
-        }
-        LiveGameEventMessageDto messageDto = LiveGameEventMessageDto.builder()
-                .killPlayer(this.liveStatRedisMapper.getPlayerHashList(gameId, liveGameEventDto.getKillPlayer()))
-                .assistPlayer(this.liveStatRedisMapper.getPlayerHashList(gameId, liveGameEventDto.getAssistPlayer()))
-                .deathPlayer(this.liveStatRedisMapper.getPlayerHashList(gameId, liveGameEventDto.getDeathPlayer()))
-                .build();
-        System.out.println(messageDto.getMessage());
-    }
-
-    private void savePlayerStat(String gameId, GameTimelineParticipantDto[] participantDtos){
-        for (GameTimelineParticipantDto participantDto : participantDtos){
-            this.liveStatRedisMapper.savePlayerStatHash(
-                    gameId,
-                    String.valueOf(participantDto.getParticipantId()),
-                    participantDto.toPlayerLiveStat()
-            );
-            this.liveStatRedisMapper.savePlayerDamageShare(
-                    gameId,
-                    String.valueOf(participantDto.getParticipantId()),
-                    participantDto.getChampionDamageShare()
-            );
-        }
-    }
-
-    public GameTimelineStatDto crawlGameDetailFrame(String gameId, LocalDateTime startingTime){
-        Map<String, String> requestParameters = new HashMap<>();
-        requestParameters.put("startingTime", startingTime.toString()+"Z");
-        GameTimelineStatDto gameTimelineStatDto = Crawler.doGetObject(
-                this.feedLolEsportsConfig.getUrl() + "/details/" + gameId,
-                new HashMap<>(),
-                requestParameters,
-                new TypeReference<>() {}
-        );
-        if(gameTimelineStatDto.getFirstTimeFrame().isBefore(startingTime)){
-            // end - pub
-            return null;
-        }
-        return gameTimelineStatDto;
+        log.info(newLocalDateTime.toString());
+        return newLocalDateTime;
     }
 }

@@ -44,19 +44,4 @@ public class GameTimelineParticipantDto {
                 .items(this.items)
                 .build();
     }
-
-    public LiveGameEventDto compareTo(PlayerLiveStat playerLiveStat){
-        LiveGameEventDto liveGameEventDto = new LiveGameEventDto();
-        String playerId = String.valueOf(this.getParticipantId());
-        if(playerLiveStat.getKills() < this.getKills()){
-            liveGameEventDto.getKillPlayer().add(playerId);
-        }
-        if(playerLiveStat.getDeaths() < this.getDeaths()){
-            liveGameEventDto.getDeathPlayer().add(playerId);
-        }
-        if(playerLiveStat.getAssists() < this.getAssists()){
-            liveGameEventDto.getAssistPlayer().add(playerId);
-        }
-        return liveGameEventDto;
-    }
 }

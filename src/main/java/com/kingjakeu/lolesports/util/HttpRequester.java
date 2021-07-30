@@ -46,6 +46,11 @@ public class HttpRequester {
             headersSpec = headersSpec.header(header.getKey(), header.getValue());
         }
 
+        StringBuilder sb = new StringBuilder("\nDO [GET]: " + url + "\n");
+        for(Map.Entry<String, String> entry : queryParams.entrySet()){
+            sb.append(entry.getKey()).append(" : ").append(entry.getValue());
+        }
+        log.info(sb.toString());
         // Send GET Request and get response as String
         Mono<ResponseEntity<String>> entityMono = headersSpec
                 .retrieve()
