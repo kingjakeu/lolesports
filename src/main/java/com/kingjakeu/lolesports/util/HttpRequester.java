@@ -45,8 +45,36 @@ public class HttpRequester {
         }
 
         // Send GET Request and get response as String
+        headersSpec.retrieve().toEntity(Map.class);
         Mono<String> response = headersSpec.retrieve().bodyToMono(String.class);
         return response.block();
+    }
+
+    public static Map<String, String> doGetJsonMap(String url,
+                                                   Map<String, String> httpHeader,
+                                                   Map<String, String> queryParams) {
+        // Create Get-WebClient
+        WebClient webClient = createDefaultGetJsonClient(url);
+        WebClient.RequestHeadersUriSpec<?> uriSpec = webClient.get();
+
+        // Set Request parameters
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.setAll(queryParams);
+
+        // Set URI with parameters
+        WebClient.RequestHeadersSpec<?> headersSpec = uriSpec.uri(
+                uriBuilder -> uriBuilder
+                        .queryParams(params)
+                        .build()
+        );
+
+        // Set Http Header
+        for (Map.Entry<String, String> header : httpHeader.entrySet()) {
+            headersSpec = headersSpec.header(header.getKey(), header.getValue());
+        }
+
+        // Send GET Request and get response as String
+        return (Map<String, String>) headersSpec.retrieve().toEntity(Map.class);
     }
 
     /**
